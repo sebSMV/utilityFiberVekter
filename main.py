@@ -2,7 +2,7 @@ import re
 import serial
 from plc_connector import Connector
 
-configFilePath = '/home/pi/vektConverter/conf.txt'
+configFilePath = '/home/pi/conf.txt'
 #configFilePath = 'conf.txt'
 
 def is_valid_ip(ip):

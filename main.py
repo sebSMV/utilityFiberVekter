@@ -1,8 +1,9 @@
 import re
 import serial
+from time import sleep
 from plc_connector import Connector
 
-configFilePath = '/home/pi/conf.txt'
+configFilePath = '/home/pi/utilityFiberVekter/conf.txt'
 #configFilePath = 'conf.txt'
 
 def is_valid_ip(ip):
@@ -69,8 +70,8 @@ if __name__ == '__main__':
     print('Connecting to PLC at: ' + IP)
     with Connector(IP) as plc:
         print('Connected to PLC')
-        try:
-            while True:
+        while True:
+            try:
                 if plc.read("TS_ZeroWeightA"):
                     print("Resetting Weight A")
                     offsetA = abs(rawdataA)
@@ -105,8 +106,7 @@ if __name__ == '__main__':
                     print(e)
                 finally:
                     pass
-
-        except Exception as e:
-            print('An error occured')
-            print(e)
-            exit(0)
+            except Exception as e:
+                print('An error occured')
+                print(e)
+                sleep(10)

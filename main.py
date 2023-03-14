@@ -2,6 +2,7 @@ import re
 import serial
 from time import sleep
 from plc_connector import Connector
+from datetime import datetime
 
 configFilePath = '/home/pi/utilityFiberVekter/conf.txt'
 #configFilePath = 'conf.txt'
@@ -64,6 +65,8 @@ if __name__ == '__main__':
     offsetA = 0.0
     offsetB = 0.0
 
+    lastSecs = 0
+
     if IP is None or portName1 is None or portName2 is None:
         raise IOError('File not found or invalid config')
 
@@ -72,6 +75,12 @@ if __name__ == '__main__':
         print('Connected to PLC')
         while True:
             try:
+                ts = datetime.now()
+                if ts.second != lastSecs:
+                    lastSecs = ts.second
+                    plc.write("TS_Heartbeat", not bool(plc.read("TS_Heartbeat")))
+
+
                 if plc.read("TS_ZeroWeightA"):
                     print("Resetting Weight A")
                     offsetA = abs(rawdataA)
@@ -82,13 +91,17 @@ if __name__ == '__main__':
                     offsetB = abs(rawdataB)
                     plc.write("TS_ZeroWeightB", False)
 
+                readData = False
                 if port1.inWaiting() > 1:
                     rawdataA = float(readLine(port1, '\r'))
-                    print("Weight A: " + str(rawdataA) + ", " + str(weightA))
+                    readData = True
 
                 if port2.inWaiting() > 1:
                     rawdataB = float(readLine(port2, '\r'))
-                    print("Weight B: " + str(rawdataB) + ", " + str(weightB))
+                    readData = True
+
+                if readData:
+                    print(f"Weight A: Raw: {rawdataA} Act: {weightA}, Weight B: Raw: {rawdataB} Act: {weightB}")
 
                 weightA = abs(rawdataA - offsetA)
                 weightB = abs(rawdataB - offsetB)
